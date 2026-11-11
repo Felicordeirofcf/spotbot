@@ -21,7 +21,17 @@ cp .env.example .env        # edite e coloque sua chave (opcional para simular)
 python -m bot ui            # abre http://127.0.0.1:8765
 ```
 
-No Windows dá para dar dois cliques em `iniciar.bat`.
+**Windows (PowerShell):** rode um comando por vez, numa pasta sua (não em `C:\WINDOWS\system32`):
+
+```powershell
+cd $HOME\Documents
+git clone https://github.com/Felicordeirofcf/spotbot.git
+cd spotbot
+.\iniciar.bat
+```
+
+Ou dê dois cliques em `iniciar.bat` no Explorer. É preciso ter o Python 3.10+ instalado, com a opção
+"Add python.exe to PATH" marcada.
 
 Sem chave da API você já consegue: varrer o mercado, rodar backtest e operar em **simulação** (os
 dados públicos de mercado não exigem chave).
