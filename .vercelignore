@@ -1,0 +1,7 @@
+.env
+.venv
+tests
+state*.json
+settings.json
+iniciar.bat
+iniciar.sh

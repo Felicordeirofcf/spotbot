@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spot Bot · Sinais de entrada</title>
+<meta name="description" content="Oportunidades de entrada em spot com alvo de 2% líquido: recuo dentro de tendência de alta, nos pares mais líquidos da Binance.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23f0b90b'/><text x='50' y='70' font-size='60' text-anchor='middle' font-family='Arial' font-weight='900' fill='%23111'>₿</text></svg>">
+<style>
+  :root{--bg:#0b0e14;--panel:#121722;--panel2:#171d2b;--line:#232b3d;--txt:#e6e9f0;--mut:#8b93a7;--acc:#f0b90b;--up:#16c784;--down:#ea3943;--r:14px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 22px;background:rgba(11,14,20,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .brand{display:flex;gap:10px;align-items:center;font-weight:700;font-size:17px}
+  .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--acc),#ff8a00);display:grid;place-items:center;color:#111;font-weight:900}
+  .pill{padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(22,199,132,.12);color:var(--up);border:1px solid rgba(22,199,132,.3)}
+  main{max-width:1180px;margin:0 auto;padding:22px 22px 60px;display:grid;gap:18px}
+  .hero h1{margin:6px 0 4px;font-size:26px} .hero p{margin:0;color:var(--mut);max-width:760px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+  .kpi .l{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.6px} .kpi .v{font-size:22px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+  .card h2{margin:0;font-size:15px;padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .card h2 small{color:var(--mut);font-weight:400;font-size:12px}
+  .scroll{overflow:auto}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{color:var(--mut);font-weight:500;font-size:12px}
+  td.why{white-space:normal;color:var(--mut);font-size:12px;min-width:260px}
+  .up{color:var(--up)} .down{color:var(--down)} .mut{color:var(--mut)}
+  .empty{padding:34px 16px;text-align:center;color:var(--mut)}
+  .bar{height:6px;border-radius:4px;background:#232b3d;overflow:hidden;width:70px;display:inline-block;vertical-align:middle;margin-left:6px}
+  .bar i{display:block;height:100%;background:var(--acc)}
+  button{cursor:pointer;border:0;border-radius:10px;padding:9px 14px;font-weight:600;font-size:13px;background:var(--acc);color:#111}
+  button:disabled{opacity:.55;cursor:wait}
+  .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;padding:14px 16px}
+  .rule{background:var(--panel2);border-radius:10px;padding:10px 12px} .rule b{display:block;color:var(--acc);font-size:12px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px}
+  .warn{background:rgba(240,185,11,.07);border:1px solid rgba(240,185,11,.28);color:#f5d47a;border-radius:12px;padding:12px 14px;font-size:13px}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:s 1s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes s{to{transform:rotate(360deg)}}
+  footer{color:var(--mut);font-size:12px;text-align:center;padding:10px}
+  a{color:var(--acc)}
+  .brand,button{white-space:nowrap}
+  @media(max-width:560px){.pill{display:none}.hero h1{font-size:22px}main{padding:16px 14px 50px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo">₿</div> Spot Bot <span class="pill">SINAIS · SOMENTE LEITURA</span></div>
+  <button id="btnRefresh">↻ Atualizar</button>
+</header>
+
+<main>
+  <section class="hero">
+    <h1>Oportunidades de entrada em spot</h1>
+    <p>Varredura dos pares em USDT mais negociados da Binance, buscando <b>recuos dentro de tendência de alta</b>
+      com alvo de <b id="pTp">2%</b> líquido de taxas e stop de <b id="pSl">1,5%</b>. Atualiza a cada 2 minutos.</p>
+  </section>
+
+  <section class="kpis">
+    <div class="kpi"><div class="l">Pares analisados</div><div class="v" id="kAn">—</div></div>
+    <div class="kpi"><div class="l">Sinais agora</div><div class="v" id="kSig">—</div></div>
+    <div class="kpi"><div class="l">Melhor sinal</div><div class="v" id="kBest">—</div></div>
+    <div class="kpi"><div class="l">Atualizado</div><div class="v" id="kAt" style="font-size:16px">—</div></div>
+  </section>
+
+  <section class="card">
+    <h2>Sinais de entrada <small id="status"></small></h2>
+    <div class="scroll"><table>
+      <thead><tr><th>Par</th><th>Score</th><th>Entrada</th><th>Alvo (+líq.)</th><th>Stop</th><th>Risco : retorno</th><th>Por quê</th></tr></thead>
+      <tbody id="tbody"><tr><td colspan="7" class="empty"><span class="spin"></span>Varrendo o mercado…</td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section class="card">
+    <h2>Como a estratégia escolhe as entradas</h2>
+    <div class="rules">
+      <div class="rule"><b>Liquidez</b>Top 40 pares em USDT por volume 24h (≥ 50 mi), sem stablecoins nem tokens alavancados.</div>
+      <div class="rule"><b>Tendência · 1h</b>Preço acima da EMA200, EMA50 acima da EMA200 e subindo.</div>
+      <div class="rule"><b>Volatilidade · 1h</b>ATR14 entre 0,6% e 5%: dá para andar 2% em horas sem o stop ser atingido por ruído.</div>
+      <div class="rule"><b>Recuo · 15m</b>RSI14 abaixo de 35 nas últimas 8 velas ou toque na Bollinger inferior.</div>
+      <div class="rule"><b>Gatilho · 15m</b>Vela fechada de alta, RSI virando para cima e ainda abaixo de 55.</div>
+      <div class="rule"><b>Espaço até o alvo</b>A máxima das últimas 48h já está acima do alvo, e o preço está no máximo 3% acima da EMA50.</div>
+    </div>
+  </section>
+
+  <div class="warn">⚠️ Conteúdo informativo, gerado automaticamente a partir de dados públicos. <b>Não é recomendação de investimento</b> e não garante lucro.
+    Criptomoedas são voláteis e você pode perder dinheiro. Teste a estratégia (backtest e simulação) antes de operar.</div>
+
+  <footer>Dados: API pública de mercado da Binance · Código: <a href="https://github.com/Felicordeirofcf/spotbot" rel="noopener">github.com/Felicordeirofcf/spotbot</a></footer>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const px = v => Number(Number(v).toPrecision(6)).toString();
+const pct = (a, b) => ((a / b - 1) * 100);
+const fmtPct = v => v.toLocaleString("pt-BR", {minimumFractionDigits: 1, maximumFractionDigits: 2}) + "%";
+let lastAt = null;
+
+function ago(ms){ if(!ms) return "—"; const s = (Date.now() - ms) / 1000;
+  if(s < 60) return "agora"; if(s < 3600) return Math.round(s/60) + " min atrás"; return Math.round(s/3600) + " h atrás"; }
+
+async function load(){
+  $("btnRefresh").disabled = true; $("status").innerHTML = '<span class="spin"></span>atualizando…';
+  try{
+    const r = await fetch("/api/signals");
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error || r.status);
+    lastAt = d.generated_at;
+    $("pTp").textContent = fmtPct(d.params.take_profit_pct); $("pSl").textContent = fmtPct(d.params.stop_loss_pct);
+    $("kAn").textContent = d.analyzed; $("kSig").textContent = d.signals.length;
+    $("kBest").textContent = d.signals[0] ? d.signals[0].symbol : "—";
+    const maxScore = Math.max(1, ...d.signals.map(s => s.score));
+    $("tbody").innerHTML = d.signals.length ? d.signals.map(s => {
+      const up = pct(s.take_profit, s.entry), dn = -pct(s.stop, s.entry);
+      return `<tr><td><b>${esc(s.symbol)}</b></td>
+        <td>${s.score}<span class="bar"><i style="width:${Math.max(4, s.score / maxScore * 100)}%"></i></span></td>
+        <td>${px(s.entry)}</td><td class="up">${px(s.take_profit)} <span class="mut">(+${fmtPct(up)} bruto)</span></td>
+        <td class="down">${px(s.stop)} <span class="mut">(−${fmtPct(dn)})</span></td>
+        <td>1 : ${(up / dn).toFixed(2)}</td><td class="why">${s.reasons.map(esc).join(" · ")}</td></tr>`;
+    }).join("") : `<tr><td colspan="7" class="empty">Nenhum par cumpre todos os filtros agora.<br>Na maior parte do tempo é assim: o setup é seletivo de propósito. A página atualiza sozinha.</td></tr>`;
+    $("status").textContent = "";
+  }catch(e){
+    $("status").innerHTML = `<span class="down">erro: ${esc(e.message)}</span>`;
+    if(!lastAt) $("tbody").innerHTML = `<tr><td colspan="7" class="empty">Não foi possível consultar a Binance agora. Tente de novo em instantes.</td></tr>`;
+  }
+  $("kAt").textContent = ago(lastAt);
+  $("btnRefresh").disabled = false;
+}
+
+$("btnRefresh").onclick = load;
+setInterval(() => $("kAt").textContent = ago(lastAt), 15000);
+setInterval(load, 120000);
+load();
+</script>
+</body>
+</html>

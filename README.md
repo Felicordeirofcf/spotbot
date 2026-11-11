@@ -89,7 +89,17 @@ python -m bot check                             # valida a chave
 python -m unittest discover tests               # testes
 ```
 
-## Onde hospedar (por que não na Vercel)
+## Painel público de sinais na Vercel
+
+O repositório também publica na Vercel uma **página só de leitura** (`public/index.html` +
+`api/signals.py`, região São Paulo `gru1`): ela varre os 40 pares mais líquidos e mostra os sinais.
+**Não usa chave da API e não envia ordens.** O CDN guarda o resultado por 2 minutos. Parâmetros
+opcionais: `/api/signals?tp=2&sl=1.5`.
+
+Deploy: em vercel.com → *Add New → Project* → importe `spotbot` → *Deploy* (não precisa de
+variável de ambiente).
+
+## Onde hospedar o robô (por que não na Vercel)
 
 A Vercel roda funções serverless de curta duração. Um robô de trade precisa de um **processo
 contínuo**, de **estado persistente** e de um **IP fixo** (para a restrição de IP da chave). Além

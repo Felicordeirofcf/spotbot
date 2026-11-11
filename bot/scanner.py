@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 from .binance_client import BinanceClient
 from .config import Config
@@ -42,18 +43,25 @@ def liquid_symbols(client: BinanceClient, cfg: Config, rules: dict | None = None
     return [s for _, s in out[: cfg.top_n_symbols]]
 
 
-def scan(client: BinanceClient, cfg: Config, symbols: list[str] | None = None) -> tuple[list[Signal], int]:
+def scan(client: BinanceClient, cfg: Config, symbols: list[str] | None = None,
+         workers: int = 1) -> tuple[list[Signal], int]:
     """Retorna (sinais ordenados por score, quantidade de pares analisados)."""
     symbols = symbols or liquid_symbols(client, cfg)
-    signals: list[Signal] = []
-    for sym in symbols:
+
+    def _one(sym: str) -> Signal | None:
         try:
             c1h = closed_candles(client.klines(sym, "1h", 260))
             c15 = closed_candles(client.klines(sym, "15m", 100))
-            sig = evaluate(sym, c1h, c15, cfg)
-            if sig:
-                signals.append(sig)
+            return evaluate(sym, c1h, c15, cfg)
         except Exception as exc:  # um par com problema não derruba a varredura
             log.warning("falha ao analisar %s: %s", sym, exc)
+            return None
+
+    if workers > 1:
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            results = list(pool.map(_one, symbols))
+    else:
+        results = [_one(s) for s in symbols]
+    signals = [s for s in results if s]
     signals.sort(key=lambda s: s.score, reverse=True)
     return signals, len(symbols)
