@@ -164,6 +164,20 @@ class BotSimTests(unittest.TestCase):
         self.assertEqual(trade["reason"], "alvo")
         self.assertAlmostEqual(trade["pnl_pct"], 2.0, delta=0.05)
 
+    def test_autostart_persists(self):
+        self.bot.cfg.scan_interval_sec = 3600
+        self.bot.start()
+        self.bot.stop_event.set()
+        self.bot.thread.join(10)
+        again = Bot(Config(), state_path=self.bot.state_path)
+        self.assertTrue(again.state["autostart"])
+        again.client = FakeClient()
+        again.resume_if_needed()
+        self.assertTrue(again.running)
+        again.stop()
+        again.thread.join(10)
+        self.assertFalse(Bot(Config(), state_path=self.bot.state_path).state["autostart"])
+
     def test_auto_trade_off_only_signals(self):
         self.bot.cfg.auto_trade = False
         self.bot.tick()

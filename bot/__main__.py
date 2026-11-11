@@ -1,5 +1,6 @@
 """Uso:
   python -m bot ui                       # abre o painel em http://127.0.0.1:8765
+  python -m bot ui 8765 --no-browser     # modo servidor (VPS): painel + robô
   python -m bot scan                     # lista oportunidades agora
   python -m bot backtest BTCUSDT,ETHUSDT 60
   python -m bot run                      # robô sem interface (terminal)
@@ -24,7 +25,9 @@ def main(argv: list[str]) -> int:
     bot = Bot(cfg)
     if cmd == "ui":
         from .web import serve
-        port = int(argv[1]) if len(argv) > 1 else 8765
+        args = [a for a in argv[1:] if not a.startswith("--")]
+        port = int(args[0]) if args else 8765
+        bot.resume_if_needed()
         serve(bot, port=port)
     elif cmd == "scan":
         for s in bot.run_scan():

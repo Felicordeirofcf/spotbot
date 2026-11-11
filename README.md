@@ -99,13 +99,38 @@ opcionais: `/api/signals?tp=2&sl=1.5`.
 Deploy: em vercel.com → *Add New → Project* → importe `spotbot` → *Deploy* (não precisa de
 variável de ambiente).
 
-## Onde hospedar o robô (por que não na Vercel)
+## Rodar 24h num servidor (sem deixar o PC ligado)
 
-A Vercel roda funções serverless de curta duração. Um robô de trade precisa de um **processo
-contínuo**, de **estado persistente** e de um **IP fixo** (para a restrição de IP da chave). Além
-disso, a Binance.com bloqueia IPs dos EUA (região padrão da Vercel). Opções que funcionam:
+Use um servidor Ubuntu **no Brasil** (a Binance bloqueia IPs dos EUA). A opção gratuita é a
+**Oracle Cloud Always Free**, região *Brazil East (São Paulo)*, com IP fixo. Também servem VPS pagas
+em São Paulo (Vultr, AWS Lightsail, Magalu Cloud).
 
-- **Seu computador** (o mais simples para começar).
-- **Uma VPS pequena** (ex.: região São Paulo) rodando `python -m bot run` com `systemd`/`tmux`. Para
-  acessar o painel remoto use um túnel SSH (`ssh -L 8765:127.0.0.1:8765 usuario@vps`). Não exponha
-  a porta na internet.
+No servidor, rode:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Felicordeirofcf/spotbot/main/deploy/install.sh | bash
+```
+
+O script instala tudo e registra o serviço `spotbot`, que liga junto com o servidor e reinicia
+sozinho se cair. Se o robô estava rodando antes de um reinício, ele volta a rodar sozinho. No final, o script mostra o IP para
+cadastrar na chave da Binance.
+
+O painel **não fica exposto na internet**. Para acessá-lo, abra um túnel SSH a partir do seu PC:
+
+```bash
+ssh -L 8765:127.0.0.1:8765 ubuntu@IP_DO_SERVIDOR
+```
+
+e acesse http://127.0.0.1:8765. Depois de iniciar o robô no painel, você pode fechar o túnel e
+desligar o PC.
+
+| Tarefa | Comando no servidor |
+|---|---|
+| Editar a chave | `nano ~/spotbot/.env` e `sudo systemctl restart spotbot` |
+| Ver o log ao vivo | `journalctl -u spotbot -f` |
+| Atualizar o robô | `cd ~/spotbot && git pull && sudo systemctl restart spotbot` |
+
+## Por que não na Vercel
+
+A Vercel só roda funções curtas e não tem processo contínuo nem IP fixo, por isso ela hospeda
+apenas o painel público de sinais.

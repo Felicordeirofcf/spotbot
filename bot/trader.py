@@ -105,10 +105,16 @@ class Bot:
         self.stop_event.clear()
         self.thread = threading.Thread(target=self._loop, daemon=True)
         self.thread.start()
+        with self.lock:
+            self.state["autostart"] = True  # volta a rodar sozinho se o servidor reiniciar
+            self._save_state()
         self.info(f"Robô iniciado ({'SIMULAÇÃO' if self.cfg.dry_run else 'REAL'})")
 
     def stop(self) -> None:
         self.stop_event.set()
+        with self.lock:
+            self.state["autostart"] = False
+            self._save_state()
         self.info("Robô parado (ordens OCO já abertas na Binance continuam valendo)")
 
     def _loop(self) -> None:
@@ -123,6 +129,15 @@ class Bot:
             except Exception as exc:
                 self.info(f"Erro no ciclo: {exc}", "error")
             self.stop_event.wait(self.cfg.scan_interval_sec)
+
+    def resume_if_needed(self) -> None:
+        """Religa o robô se ele estava rodando antes de o processo/servidor reiniciar."""
+        if self.state.get("autostart"):
+            try:
+                self.start()
+                self.info("Robô retomado automaticamente após reinício")
+            except Exception as exc:
+                self.info(f"Não foi possível retomar o robô: {exc}", "error")
 
     # ------------------------------------------------------------ ciclo
     def tick(self) -> None:
